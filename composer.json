@@ -1,0 +1,36 @@
+{
+  "name": "hamlet/db-mysql-swoole",
+  "type": "framework",
+  "description": "Hamlet Framework / DB / MySQL / Swoole",
+  "keywords": ["framework"],
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Vasily Kartashov",
+      "email": "info@kartashov.com"
+    }
+  ],
+  "require": {
+    "php": "^7.2",
+    "ext-swoole": "@stable",
+    "psr/log": "@stable",
+    "hamlet-framework/db": "dev-master"
+  },
+  "require-dev": {
+    "phake/phake": "@stable",
+    "phpunit/phpunit": "^7",
+    "squizlabs/php_codesniffer": "@stable",
+    "monolog/monolog": "@stable",
+    "swoft/swoole-ide-helper": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "Hamlet\\Database\\MySQLSwoole\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Hamlet\\Database\\MySQLSwoole\\": "tests"
+    }
+  }
+}
