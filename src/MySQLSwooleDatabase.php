@@ -27,7 +27,7 @@ class MySQLSwooleDatabase extends Database
                 self::$hosts[$host] = co::gethostbyname($host);
             }
             $params = [
-                'host' => $host,
+                'host' => self::$hosts[$host],
                 'user' => $user,
                 'password' => $password
             ];

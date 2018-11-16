@@ -1,5 +1,5 @@
 {
-  "name": "hamlet/db-mysql-swoole",
+  "name": "hamlet-framework/db-mysql-swoole",
   "type": "framework",
   "description": "Hamlet Framework / DB / MySQL / Swoole",
   "keywords": ["framework"],
