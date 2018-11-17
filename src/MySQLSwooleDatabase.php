@@ -23,12 +23,12 @@ class MySQLSwooleDatabase extends Database
     {
         $connector = function () use ($host, $user, $password, $databaseName): MySQL {
             $connection = new MySQL();
-            if (!isset(self::$hosts)) {
+            if (!isset(self::$hosts[$host])) {
                 self::$hosts[$host] = co::gethostbyname($host);
             }
             $params = [
-                'host' => self::$hosts[$host],
-                'user' => $user,
+                'host'     => self::$hosts[$host],
+                'user'     => $user,
                 'password' => $password
             ];
             if ($databaseName) {
