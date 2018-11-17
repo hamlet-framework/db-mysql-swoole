@@ -52,9 +52,10 @@ class MySQLSwooleProcedure extends Procedure
      */
     public function fetch(): Generator
     {
-        return ($this->executor)(function (MySQL $connection) {
-            yield from $this->bindParametersAndExecute($connection);
+        $data = ($this->executor)(function (MySQL $connection) {
+            return $this->bindParametersAndExecute($connection);
         });
+        yield from $data;
     }
 
     public function affectedRows(): int
@@ -71,7 +72,6 @@ class MySQLSwooleProcedure extends Procedure
         list($query, $parameters) = $this->unwrapQueryAndParameters($this->query, $this->parameters);
         $this->parameters = [];
 
-        /** @var Statement $statement */
         $statement = $connection->prepare($query);
         if ($statement === false) {
             throw MySQLSwooleDatabase::exception($connection);
