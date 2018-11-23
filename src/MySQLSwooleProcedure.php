@@ -6,7 +6,6 @@ use Generator;
 use Hamlet\Database\Procedure;
 use Hamlet\Database\Traits\QueryExpanderTrait;
 use Swoole\Coroutine\MySQL;
-use Swoole\Coroutine\MySQL\Statement;
 
 class MySQLSwooleProcedure extends Procedure
 {
@@ -72,7 +71,8 @@ class MySQLSwooleProcedure extends Procedure
         list($query, $parameters) = $this->unwrapQueryAndParameters($this->query, $this->parameters);
         $this->parameters = [];
 
-        $statement = $connection->prepare($query);
+        $key = 'statement_' . md5($query);
+        $statement = $connection->{$key} ?? $connection->{$key} = $connection->prepare($query);
         if ($statement === false) {
             throw MySQLSwooleDatabase::exception($connection);
         }
