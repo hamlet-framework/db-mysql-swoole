@@ -34,7 +34,13 @@ class MySQLSwooleDatabase extends Database
             if ($databaseName) {
                 $params['database'] = $databaseName;
             }
-            $connection->connect($params);
+            while (true) {
+                $connection->connect($params);
+                if ($connection) {
+                    break;
+                }
+                co::sleep(0.0001);
+            }
             return $connection;
         };
         $pool = new ConnectionPool($connector);
