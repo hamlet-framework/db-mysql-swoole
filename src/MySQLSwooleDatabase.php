@@ -34,7 +34,8 @@ class MySQLSwooleDatabase extends Database
             if ($databaseName) {
                 $params['database'] = $databaseName;
             }
-            while (true) {
+            $attempts = 1000;
+            while ($attempts-- > 0) {
                 $connection->connect($params);
                 if ($connection) {
                     break;
