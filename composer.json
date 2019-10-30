@@ -14,14 +14,14 @@
     "php": "^7.2",
     "ext-swoole": "@stable",
     "psr/log": "@stable",
-    "hamlet-framework/db": "dev-master"
+    "hamlet-framework/db": "@stable"
   },
   "require-dev": {
     "phake/phake": "@stable",
     "phpunit/phpunit": "^7",
     "squizlabs/php_codesniffer": "@stable",
     "monolog/monolog": "@stable",
-    "swoft/swoole-ide-helper": "dev-master"
+    "swoole/ide-helper": "@stable"
   },
   "autoload": {
     "psr-4": {
