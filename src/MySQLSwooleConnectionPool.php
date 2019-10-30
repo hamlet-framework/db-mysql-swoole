@@ -28,6 +28,11 @@ class MySQLSwooleConnectionPool implements ConnectionPoolInterface
     /**
      * @var int
      */
+    private $capacity;
+
+    /**
+     * @var int
+     */
     private $size;
 
     /**
@@ -40,13 +45,17 @@ class MySQLSwooleConnectionPool implements ConnectionPoolInterface
         $this->connector = $connector;
         $this->logger = new NullLogger();
         $this->pool = new Channel($capacity);
+        $this->capacity = $capacity;
         $this->size = $capacity;
+    }
 
-        while ($capacity > 0) {
-            $db = $connector();
+    public function warmUp()
+    {
+        while ($this->size < $this->capacity) {
+            $db = ($this->connector)();
             if ($db !== false) {
                 $this->pool->push($db);
-                $capacity--;
+                $this->size++;
             }
         }
     }

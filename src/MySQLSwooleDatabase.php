@@ -40,6 +40,11 @@ class MySQLSwooleDatabase extends Database
         return parent::__construct($pool);
     }
 
+    public function warmUp()
+    {
+        $this->pool->warmUp();
+    }
+
     public function prepare(string $query): Procedure
     {
         $procedure = new MySQLSwooleProcedure($this->executor(), $query);
