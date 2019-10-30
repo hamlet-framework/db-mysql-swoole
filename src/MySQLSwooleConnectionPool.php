@@ -2,9 +2,7 @@
 
 namespace Hamlet\Database\MySQLSwoole;
 
-use Hamlet\Database\ConnectionPool;
 use Hamlet\Database\ConnectionPoolInterface;
-use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Swoole\Coroutine\Channel;

@@ -3,7 +3,6 @@
 namespace Hamlet\Database\MySQLSwoole;
 
 use co;
-use Hamlet\Database\ConnectionPool;
 use Hamlet\Database\Database;
 use Hamlet\Database\DatabaseException;
 use Hamlet\Database\Procedure;
@@ -19,7 +18,7 @@ class MySQLSwooleDatabase extends Database
      */
     static $hosts = [];
 
-    public function __construct(string $host, string $user, string $password, string $databaseName = null)
+    public function __construct(string $host, string $user, string $password, string $databaseName = null, int $poolCapacity = 512)
     {
         $connector = function () use ($host, $user, $password, $databaseName): MySQL {
             $connection = new MySQL();
@@ -37,7 +36,7 @@ class MySQLSwooleDatabase extends Database
             $connection->connect($params);
             return $connection;
         };
-        $pool = new ConnectionPool($connector);
+        $pool = new MySQLSwooleConnectionPool($connector, $poolCapacity);
         return parent::__construct($pool);
     }
 
