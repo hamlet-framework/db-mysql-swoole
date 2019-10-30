@@ -2,11 +2,11 @@
 
 namespace Hamlet\Database\MySQLSwoole;
 
-use co;
 use Hamlet\Database\Database;
 use Hamlet\Database\DatabaseException;
 use Hamlet\Database\Procedure;
 use Swoole\Coroutine\MySQL;
+use function gethostbyname;
 
 /**
  * @template-extends Database<T>
@@ -23,7 +23,7 @@ class MySQLSwooleDatabase extends Database
         $connector = function () use ($host, $user, $password, $databaseName): MySQL {
             $connection = new MySQL();
             if (!isset(self::$hosts[$host])) {
-                self::$hosts[$host] = co::gethostbyname($host);
+                self::$hosts[$host] = gethostbyname($host);
             }
             $params = [
                 'host'     => self::$hosts[$host],
