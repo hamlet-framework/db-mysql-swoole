@@ -67,7 +67,7 @@ class MySQLSwooleConnectionPool implements ConnectionPoolInterface
     public function pop()
     {
         if ($this->size > 0) {
-            $this->logger->debug('Fetching connection from pool (' . count($this->pool) . ' connections left in pool)');
+            $this->logger->debug('Fetching connection from pool (' . $this->size . ' connections in pool)');
             $this->size--;
             $connection = $this->pool->pop();
         } else {
@@ -84,7 +84,7 @@ class MySQLSwooleConnectionPool implements ConnectionPoolInterface
      */
     public function push($connection)
     {
-        $this->logger->debug('Releasing connection back to pool (' . count($this->pool) . ' connections)');
+        $this->logger->debug('Releasing connection back to pool (' . $this->size . ' connections)');
         $this->size++;
         $this->pool->push($connection);
     }
