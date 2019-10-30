@@ -9,7 +9,7 @@ use Swoole\Coroutine\MySQL;
 use function gethostbyname;
 
 /**
- * @template-extends Database<T>
+ * @template-extends Database<MySQL>
  */
 class MySQLSwooleDatabase extends Database
 {
@@ -40,9 +40,9 @@ class MySQLSwooleDatabase extends Database
         return parent::__construct($pool);
     }
 
-    public function warmUp()
+    public function warmUp(int $count)
     {
-        $this->pool->warmUp();
+        $this->pool->warmUp($count);
     }
 
     public function prepare(string $query): Procedure
