@@ -2,16 +2,16 @@
 
 namespace Hamlet\Database\MySQLSwoole;
 
-use Hamlet\Database\ConnectionPoolInterface;
+use Hamlet\Database\ConnectionPool;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Swoole\Coroutine\Channel;
 use Swoole\Coroutine\MySQL;
 
 /**
- * @implements ConnectionPoolInterface<MySQL>
+ * @implements ConnectionPool<MySQL>
  */
-class MySQLSwooleConnectionPool implements ConnectionPoolInterface
+class MySQLSwooleConnectionPool implements ConnectionPool
 {
     /**
      * @var callable

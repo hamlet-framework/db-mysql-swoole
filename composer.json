@@ -2,7 +2,7 @@
   "name": "hamlet-framework/db-mysql-swoole",
   "type": "framework",
   "description": "Hamlet Framework / DB / MySQL / Swoole",
-  "keywords": ["framework"],
+  "keywords": ["framework", "orm", "mysql", "swoole"],
   "license": "Apache-2.0",
   "authors": [
     {
@@ -17,12 +17,12 @@
     "hamlet-framework/db": "dev-master"
   },
   "require-dev": {
+    "monolog/monolog": "@stable",
     "phake/phake": "@stable",
     "phpunit/phpunit": "^7",
-    "vimeo/psalm": "@stable",
     "squizlabs/php_codesniffer": "@stable",
-    "monolog/monolog": "@stable",
-    "swoole/ide-helper": "@stable"
+    "swoole/ide-helper": "@stable",
+    "vimeo/psalm": "@stable"
   },
   "autoload": {
     "psr-4": {
