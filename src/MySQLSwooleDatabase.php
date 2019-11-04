@@ -21,7 +21,7 @@ class MySQLSwooleDatabase extends Database
 
     /**
      * @var array
-     * @psalm-var<string,MySQL>
+     * @psalm-var<int,MySQL>
      */
     private static $pinnedConnections = [];
 
@@ -47,14 +47,26 @@ class MySQLSwooleDatabase extends Database
         return parent::__construct($pool);
     }
 
+    /**
+     * @return mixed
+     * @psalm-return MySQL|null
+     */
     protected function getPinnedConnection()
     {
         return self::$pinnedConnections[Coroutine::getuid()] ?? null;
     }
 
+    /**
+     * @param mixed $connection
+     * @psalm-param MySQL|null $connection
+     */
     protected function setPinnedConnection($connection)
     {
-        self::$pinnedConnections[Coroutine::getuid()] = $connection;
+        if ($connection === null) {
+            unset(self::$pinnedConnections[Coroutine::getuid()]);
+        } else {
+            self::$pinnedConnections[Coroutine::getuid()] = $connection;
+        }
     }
 
     public function warmUp(int $count)
