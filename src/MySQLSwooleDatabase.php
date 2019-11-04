@@ -5,6 +5,7 @@ namespace Hamlet\Database\MySQLSwoole;
 use Hamlet\Database\Database;
 use Hamlet\Database\DatabaseException;
 use Hamlet\Database\Procedure;
+use Swoole\Coroutine;
 use Swoole\Coroutine\MySQL;
 use function gethostbyname;
 
@@ -16,7 +17,13 @@ class MySQLSwooleDatabase extends Database
     /**
      * @var array<string,string>
      */
-    static $hosts = [];
+    private static $hosts = [];
+
+    /**
+     * @var array
+     * @psalm-var<string,MySQL>
+     */
+    private static $pinnedConnections = [];
 
     public function __construct(string $host, string $user, string $password, string $databaseName = null, int $poolCapacity = 512)
     {
@@ -38,6 +45,16 @@ class MySQLSwooleDatabase extends Database
         };
         $pool = new MySQLSwooleConnectionPool($connector, $poolCapacity);
         return parent::__construct($pool);
+    }
+
+    protected function getPinnedConnection()
+    {
+        return self::$pinnedConnections[Coroutine::getuid()] ?? null;
+    }
+
+    protected function setPinnedConnection($connection)
+    {
+        self::$pinnedConnections[Coroutine::getuid()] = $connection;
     }
 
     public function warmUp(int $count)

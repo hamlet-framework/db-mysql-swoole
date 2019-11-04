@@ -37,7 +37,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     public function __construct(callable $connector, int $capacity)
     {
         $this->connector = $connector;
-        $this->logger    = new NullLogger();
+        $this->logger    = new NullLogger;
         $this->channel   = new Channel($capacity);
     }
 
