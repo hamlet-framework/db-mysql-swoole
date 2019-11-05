@@ -3,7 +3,6 @@
 namespace Hamlet\Database\MySQLSwoole;
 
 use Hamlet\Database\ConnectionPool;
-use Hamlet\Database\DatabaseException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Swoole\Atomic;
@@ -76,7 +75,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     public function pop()
     {
         while ($this->cursor->get() == 0) {
-            throw new DatabaseException('Empty connection pool');
+            return ($this->connector)();
         }
         return $this->pool[$this->cursor->sub(1)];
     }
