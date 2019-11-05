@@ -5,7 +5,9 @@ namespace Hamlet\Database\MySQLSwoole;
 use Hamlet\Database\ConnectionPool;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Swoole\Coroutine\Channel;
+use SplFixedArray;
+use Swoole\Atomic;
+use Swoole\Coroutine;
 use Swoole\Coroutine\MySQL;
 
 /**
@@ -25,9 +27,15 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     private $logger;
 
     /**
-     * @var Channel
+     * @var SplFixedArray
+     * @psalm-var SplFixedArray<MySQL>
      */
-    private $channel;
+    private $pool;
+
+    /**
+     * @var Atomic
+     */
+    private $size;
 
     /**
      * @param callable $connector
@@ -38,7 +46,8 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     {
         $this->connector = $connector;
         $this->logger    = new NullLogger;
-        $this->channel   = new Channel($capacity);
+        $this->pool      = new SplFixedArray($capacity);
+        $this->size->set(0);
     }
 
     public function warmUp(int $count)
@@ -46,8 +55,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool
         while ($count > 0) {
             $db = ($this->connector)();
             if ($db !== false) {
-                $this->channel->push($db);
-                $count--;
+                $this->pool[$this->size->add(1)] = $db;
             }
         }
     }
@@ -67,12 +75,10 @@ class MySQLSwooleConnectionPool implements ConnectionPool
      */
     public function pop()
     {
-        $connection = $this->channel->pop();
-        if ($connection === false) {
-            $this->logger->debug('Opening new connection');
-            $connection = ($this->connector)();
+        while ($this->size->get() == 0) {
+            Coroutine::sleep(0.0001);
         }
-        return $connection;
+        return $this->pool[$this->size->sub(1)];
     }
 
     /**
@@ -81,10 +87,6 @@ class MySQLSwooleConnectionPool implements ConnectionPool
      */
     public function push($connection)
     {
-        $success = $this->channel->push($connection);
-        if (!$success) {
-            $this->logger->debug("Cannot return connection to pool, closing");
-            $connection->close();
-        }
+        $this->pool[$this->size->add(1)] = $connection;
     }
 }

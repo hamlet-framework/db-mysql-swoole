@@ -29,7 +29,7 @@ class MySQLSwooleProcedure extends Procedure
         $this->query = $query;
     }
 
-    public function execute(): void
+    public function execute()
     {
         ($this->executor)(function (MySQL $connection) {
             $this->bindParametersAndExecute($connection);

@@ -11,17 +11,17 @@
     }
   ],
   "require": {
-    "php": "^7.2",
+    "php": "^7.0",
     "ext-swoole": "@stable",
     "psr/log": "@stable",
     "hamlet-framework/db": "dev-master"
   },
   "require-dev": {
+    "eaglewu/swoole-ide-helper": "dev-master",
     "monolog/monolog": "@stable",
     "phake/phake": "@stable",
     "phpunit/phpunit": "^7",
     "squizlabs/php_codesniffer": "@stable",
-    "swoole/ide-helper": "@stable",
     "vimeo/psalm": "@stable"
   },
   "autoload": {
