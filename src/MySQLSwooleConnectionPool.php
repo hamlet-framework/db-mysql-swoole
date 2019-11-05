@@ -6,9 +6,7 @@ use Hamlet\Database\ConnectionPool;
 use Hamlet\Database\DatabaseException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use SplFixedArray;
 use Swoole\Atomic;
-use Swoole\Coroutine;
 use Swoole\Coroutine\MySQL;
 
 /**
@@ -28,8 +26,8 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     private $logger;
 
     /**
-     * @var SplFixedArray
-     * @psalm-var SplFixedArray<MySQL>
+     * @var array
+     * @psalm-var array<int,MySQL>
      */
     private $pool;
 
@@ -47,7 +45,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     {
         $this->connector = $connector;
         $this->logger    = new NullLogger;
-        $this->pool      = new SplFixedArray($capacity);
+        $this->pool      = [];
         $this->cursor    = new Atomic(0);
     }
 
