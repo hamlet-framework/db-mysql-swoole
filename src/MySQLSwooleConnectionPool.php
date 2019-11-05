@@ -35,7 +35,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     /**
      * @var Atomic
      */
-    private $size;
+    private $cursor;
 
     /**
      * @param callable $connector
@@ -47,7 +47,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool
         $this->connector = $connector;
         $this->logger    = new NullLogger;
         $this->pool      = new SplFixedArray($capacity);
-        $this->size      = new Atomic(0);
+        $this->cursor    = new Atomic(0);
     }
 
     public function warmUp(int $count)
@@ -55,7 +55,8 @@ class MySQLSwooleConnectionPool implements ConnectionPool
         while ($count > 0) {
             $db = ($this->connector)();
             if ($db !== false) {
-                $this->pool[$this->size->add(1)] = $db;
+                $bar = $this->cursor->add(1);
+                $this->pool[$bar - 1] = $db;
             }
         }
     }
@@ -75,10 +76,10 @@ class MySQLSwooleConnectionPool implements ConnectionPool
      */
     public function pop()
     {
-        while ($this->size->get() == 0) {
+        while ($this->cursor->get() == 0) {
             Coroutine::sleep(0.0001);
         }
-        return $this->pool[$this->size->sub(1)];
+        return $this->pool[$this->cursor->sub(1)];
     }
 
     /**
@@ -87,6 +88,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool
      */
     public function push($connection)
     {
-        $this->pool[$this->size->add(1)] = $connection;
+        $bar = $this->cursor->add(1);
+        $this->pool[$bar - 1] = $connection;
     }
 }
