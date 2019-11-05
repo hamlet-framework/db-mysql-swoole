@@ -47,7 +47,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool
         $this->connector = $connector;
         $this->logger    = new NullLogger;
         $this->pool      = new SplFixedArray($capacity);
-        $this->size->set(0);
+        $this->size      = new Atomic(0);
     }
 
     public function warmUp(int $count)
