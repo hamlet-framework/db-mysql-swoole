@@ -5,6 +5,7 @@ namespace Hamlet\Database\MySQLSwoole;
 use Hamlet\Database\Database;
 use Hamlet\Database\DatabaseException;
 use Hamlet\Database\Procedure;
+use Hamlet\Database\Session;
 use Swoole\Coroutine;
 use Swoole\Coroutine\MySQL;
 use Swoole\Table;
@@ -47,41 +48,11 @@ class MySQLSwooleDatabase extends Database
         $this->pool->warmUp($count);
     }
 
-    public function prepare(string $query): Procedure
+    protected function createSession($handle): Session
     {
-        $procedure = new MySQLSwooleProcedure($this->executor(), $query);
-        $procedure->setLogger($this->logger);
-        return $procedure;
-    }
-
-    /**
-     * @param MySQL $connection
-     * @return void
-     */
-    protected function startTransaction($connection)
-    {
-        $this->logger->debug('Starting transaction');
-        $connection->begin();
-    }
-
-    /**
-     * @param MySQL $connection
-     * @return void
-     */
-    protected function commit($connection)
-    {
-        $this->logger->debug('Committing transaction');
-        $connection->commit();
-    }
-
-    /**
-     * @param MySQL $connection
-     * @return void
-     */
-    protected function rollback($connection)
-    {
-        $this->logger->debug('Rolling back transaction');
-        $connection->rollback();
+        $session = new MySQLSwooleSession($handle);
+        $session->setLogger($this->logger);
+        return $session;
     }
 
     public static function exception(MySQL $connection): DatabaseException

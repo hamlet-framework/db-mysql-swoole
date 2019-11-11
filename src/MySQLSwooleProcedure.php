@@ -11,8 +11,8 @@ class MySQLSwooleProcedure extends Procedure
 {
     use QueryExpanderTrait;
 
-    /** @var callable */
-    private $executor;
+    /** @var MySQL */
+    private $handle;
 
     /** @var string */
     private $query;
@@ -23,27 +23,23 @@ class MySQLSwooleProcedure extends Procedure
     /** @var int|null */
     private $affectedRows;
 
-    public function __construct(callable $executor, string $query)
+    public function __construct(MySQL $handle, string $query)
     {
-        $this->executor = $executor;
+        $this->handle = $handle;
         $this->query = $query;
     }
 
     public function execute()
     {
-        ($this->executor)(function (MySQL $connection) {
-            $this->bindParametersAndExecute($connection);
-            $this->affectedRows = $connection->affected_rows;
-        });
+        $this->bindParametersAndExecute($this->handle);
+        $this->affectedRows = $this->handle->affected_rows;
     }
 
     public function insert(): int
     {
-        return ($this->executor)(function (MySQL $connection) {
-            $this->bindParametersAndExecute($connection);
-            $this->lastInsertId = $connection->insert_id;
-            return $this->lastInsertId;
-        });
+        $this->bindParametersAndExecute($this->handle);
+        $this->lastInsertId = $this->handle->insert_id;
+        return $this->lastInsertId;
     }
 
     /**
@@ -51,10 +47,7 @@ class MySQLSwooleProcedure extends Procedure
      */
     public function fetch(): Generator
     {
-        $data = ($this->executor)(function (MySQL $connection) {
-            return $this->bindParametersAndExecute($connection);
-        });
-        yield from $data;
+        yield from $this->bindParametersAndExecute($this->handle);
     }
 
     public function affectedRows(): int
@@ -63,18 +56,18 @@ class MySQLSwooleProcedure extends Procedure
     }
 
     /**
-     * @param MySQL $connection
+     * @param MySQL $handle
      * @return array|bool
      */
-    private function bindParametersAndExecute(MySQL $connection)
+    private function bindParametersAndExecute(MySQL $handle)
     {
         list($query, $parameters) = $this->unwrapQueryAndParameters($this->query, $this->parameters);
         $this->parameters = [];
 
         $key = 'statement_' . md5($query);
-        $statement = $connection->{$key} ?? $connection->{$key} = $connection->prepare($query);
+        $statement = $handle->{$key} ?? $handle->{$key} = $handle->prepare($query);
         if ($statement === false) {
-            throw MySQLSwooleDatabase::exception($connection);
+            throw MySQLSwooleDatabase::exception($handle);
         }
 
         $values = [];
