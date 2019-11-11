@@ -2,13 +2,8 @@
 
 namespace Hamlet\Database\MySQLSwoole;
 
-use Hamlet\Database\Database;
-use Hamlet\Database\DatabaseException;
-use Hamlet\Database\Procedure;
-use Hamlet\Database\Session;
-use Swoole\Coroutine;
+use Hamlet\Database\{Database, DatabaseException, Session};
 use Swoole\Coroutine\MySQL;
-use Swoole\Table;
 use function gethostbyname;
 
 /**

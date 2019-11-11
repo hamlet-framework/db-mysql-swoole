@@ -2,8 +2,7 @@
 
 namespace Hamlet\Database\MySQLSwoole;
 
-use Hamlet\Database\Procedure;
-use Hamlet\Database\Session;
+use Hamlet\Database\{Procedure, Session};
 use Swoole\Coroutine\MySQL;
 
 /**

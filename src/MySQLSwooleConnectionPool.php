@@ -2,11 +2,10 @@
 
 namespace Hamlet\Database\MySQLSwoole;
 
+use Exception;
 use Hamlet\Database\ConnectionPool;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
-use Swoole\Atomic;
-use Swoole\Coroutine\MySQL;
+use Psr\Log\{LoggerInterface, NullLogger};
+use Swoole\Coroutine\{Channel, MySQL};
 
 /**
  * @implements ConnectionPool<MySQL>
@@ -15,7 +14,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool
 {
     /**
      * @var callable
-     * @psalm-var callable():MySQL
+     * @psalm-var callable():MySQL|false
      */
     private $connector;
 
@@ -25,15 +24,9 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     private $logger;
 
     /**
-     * @var array
-     * @psalm-var array<int,MySQL>
+     * @var Channel
      */
     private $pool;
-
-    /**
-     * @var Atomic
-     */
-    private $cursor;
 
     /**
      * @param callable $connector
@@ -44,40 +37,38 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     {
         $this->connector = $connector;
         $this->logger    = new NullLogger;
-        $this->pool      = [];
-        $this->cursor    = new Atomic(0);
-    }
-
-    public function warmUp(int $count)
-    {
-        while ($count > 0) {
-            $db = ($this->connector)();
-            if ($db !== false) {
-                $bar = $this->cursor->add(1);
-                $this->pool[$bar - 1] = $db;
-            }
-        }
+        $this->pool      = new Channel($capacity);
     }
 
     /**
      * @param LoggerInterface $logger
-     * @return void
      */
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
+    public function warmUp(int $count)
+    {
+        while ($count > 0) {
+            try {
+                $connection = ($this->connector)();
+                if ($connection !== false) {
+                    $this->pool->push($connection);
+                    $count--;
+                }
+            } catch (Exception $e) {
+                $this->logger->warning('Failed to establish connection', ['exception' => $e]);
+            }
+        }
+    }
+
     /**
-     * @return mixed
-     * @psalm-return MySQL
+     * @return MySQL
      */
     public function pop()
     {
-        while ($this->cursor->get() == 0) {
-            return ($this->connector)();
-        }
-        return $this->pool[$this->cursor->sub(1)];
+        return $this->pool->pop();
     }
 
     /**
@@ -86,7 +77,6 @@ class MySQLSwooleConnectionPool implements ConnectionPool
      */
     public function push($connection)
     {
-        $bar = $this->cursor->add(1);
-        $this->pool[$bar - 1] = $connection;
+        $this->pool->push($connection);
     }
 }
