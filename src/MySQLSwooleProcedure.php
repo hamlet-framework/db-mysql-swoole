@@ -31,14 +31,14 @@ class MySQLSwooleProcedure extends Procedure
 
     public function execute()
     {
-        $this->bindParametersAndExecute($this->handle);
-        $this->affectedRows = $this->handle->affected_rows;
+        list($statement) = $this->bindParametersAndExecute($this->handle);
+        $this->affectedRows = $statement->affected_rows;
     }
 
     public function insert(): int
     {
-        $this->bindParametersAndExecute($this->handle);
-        $this->lastInsertId = $this->handle->insert_id;
+        list($statement) = $this->bindParametersAndExecute($this->handle);
+        $this->lastInsertId = $statement->insert_id;
         return $this->lastInsertId;
     }
 
@@ -47,7 +47,8 @@ class MySQLSwooleProcedure extends Procedure
      */
     public function fetch(): Generator
     {
-        yield from $this->bindParametersAndExecute($this->handle);
+        list($statement, $result) = $this->bindParametersAndExecute($this->handle);
+        yield from $result;
     }
 
     public function affectedRows(): int
@@ -65,15 +66,17 @@ class MySQLSwooleProcedure extends Procedure
         $this->parameters = [];
 
         $key = 'statement_' . md5($query);
-        $statement = $handle->{$key} ?? $handle->{$key} = $handle->prepare($query);
+        $statement = $this->handle->{$key} ?? $handle->prepare($query);
         if ($statement === false) {
             throw MySQLSwooleDatabase::exception($handle);
+        } else {
+            $this->handle->{$key} = $statement;
         }
 
         $values = [];
-        foreach ($parameters as list ($type, $value)) {
+        foreach ($parameters as list($type, $value)) {
             $values[] = $value;
         }
-        return $statement->execute($values);
+        return [$statement, $statement->execute($values)];
     }
 }

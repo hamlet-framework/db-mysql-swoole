@@ -24,9 +24,9 @@ class MySQLSwooleDatabase extends Database
                 $this->hosts[$host] = gethostbyname($host);
             }
             $params = [
-                'host'     => $this->hosts[$host],
-                'user'     => $user,
-                'password' => $password
+                'host'       => $this->hosts[$host],
+                'user'       => $user,
+                'password'   => $password
             ];
             if ($databaseName) {
                 $params['database'] = $databaseName;
