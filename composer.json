@@ -10,11 +10,14 @@
       "email": "info@kartashov.com"
     }
   ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "require": {
     "php": "^7.0",
     "ext-swoole": "@stable",
     "psr/log": "@stable",
-    "hamlet-framework/db": "dev-master"
+    "hamlet-framework/db": "dev-master",
+    "hamlet-framework/http-swoole": "dev-master"
   },
   "require-dev": {
     "eaglewu/swoole-ide-helper": "dev-master",

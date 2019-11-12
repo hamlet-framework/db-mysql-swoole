@@ -3,13 +3,14 @@
 namespace Hamlet\Database\MySQLSwoole;
 
 use Hamlet\Database\{Database, DatabaseException, Session};
+use Hamlet\Http\Swoole\Bootstraps\WorkerInitializable;
 use Swoole\Coroutine\MySQL;
 use function gethostbyname;
 
 /**
  * @template-extends Database<MySQL>
  */
-class MySQLSwooleDatabase extends Database
+class MySQLSwooleDatabase extends Database implements WorkerInitializable
 {
     /**
      * @var array<string,string>
@@ -38,9 +39,9 @@ class MySQLSwooleDatabase extends Database
         return parent::__construct($pool);
     }
 
-    public function warmUp(int $count)
+    public function init()
     {
-        $this->pool->warmUp($count);
+        $this->pool->init();
     }
 
     protected function createSession($handle): Session

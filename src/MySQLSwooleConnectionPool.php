@@ -4,14 +4,14 @@ namespace Hamlet\Database\MySQLSwoole;
 
 use Exception;
 use Hamlet\Database\ConnectionPool;
+use Hamlet\Http\Swoole\Bootstraps\WorkerInitializable;
 use Psr\Log\{LoggerInterface, NullLogger};
-use Swoole\Atomic;
 use Swoole\Coroutine\{Channel, MySQL};
 
 /**
  * @implements ConnectionPool<MySQL>
  */
-class MySQLSwooleConnectionPool implements ConnectionPool
+class MySQLSwooleConnectionPool implements ConnectionPool, WorkerInitializable
 {
     /**
      * @var callable
@@ -25,14 +25,14 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     private $logger;
 
     /**
-     * @var Channel
+     * @var Channel|null
      */
     private $pool;
 
     /**
-     * @var Atomic
+     * @var int
      */
-    private $count;
+    private $capacity;
 
     /**
      * @param callable $connector
@@ -43,8 +43,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     {
         $this->connector = $connector;
         $this->logger    = new NullLogger;
-        $this->pool      = new Channel($capacity);
-        $this->count     = new Atomic(0);
+        $this->capacity  = $capacity;
     }
 
     /**
@@ -55,15 +54,16 @@ class MySQLSwooleConnectionPool implements ConnectionPool
         $this->logger = $logger;
     }
 
-    public function warmUp(int $count)
+    public function init()
     {
+        $this->pool = new Channel($this->capacity);
+        $count = $this->capacity;
         while ($count > 0) {
             try {
                 $connection = ($this->connector)();
                 if ($connection !== false) {
                     $this->pool->push($connection);
                     $count--;
-                    $this->count->add();
                 }
             } catch (Exception $e) {
                 $this->logger->warning('Failed to establish connection', ['exception' => $e]);
@@ -79,10 +79,9 @@ class MySQLSwooleConnectionPool implements ConnectionPool
         while (true) {
             $connection = $this->pool->pop();
             if ($connection !== false) {
-                $this->count->sub();
                 return $connection;
             }
-            sleep(0.001);
+            sleep(0.01);
         }
     }
 
@@ -93,6 +92,5 @@ class MySQLSwooleConnectionPool implements ConnectionPool
     public function push($connection)
     {
         $this->pool->push($connection);
-        $this->count->add();
     }
 }
