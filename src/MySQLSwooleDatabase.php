@@ -3,7 +3,9 @@
 namespace Hamlet\Database\MySQLSwoole;
 
 use Hamlet\Database\{Database, DatabaseException, Session};
+use Exception;
 use Hamlet\Http\Swoole\Bootstraps\WorkerInitializable;
+use Swoole\Coroutine;
 use Swoole\Coroutine\MySQL;
 use function gethostbyname;
 
@@ -42,6 +44,22 @@ class MySQLSwooleDatabase extends Database implements WorkerInitializable
     public function init()
     {
         $this->pool->init();
+    }
+
+    public function withSession(callable $callable)
+    {
+        $handle = $this->pool->pop();
+        Coroutine::defer(function () use ($handle) {
+            $this->pool->push($handle);
+        });
+        $session = $this->createSession($handle);
+        try {
+            return $callable($session);
+        } catch (DatabaseException $e) {
+            throw $e;
+        } catch (Exception $e) {
+            throw new DatabaseException('Failed to execute statement', 0, $e);
+        }
     }
 
     protected function createSession($handle): Session

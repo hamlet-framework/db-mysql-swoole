@@ -79,4 +79,9 @@ class MySQLSwooleProcedure extends Procedure
         }
         return [$statement, $statement->execute($values)];
     }
+
+    public function __destruct()
+    {
+        $this->handle = null;
+    }
 }

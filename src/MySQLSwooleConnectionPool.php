@@ -6,6 +6,7 @@ use Exception;
 use Hamlet\Database\ConnectionPool;
 use Hamlet\Http\Swoole\Bootstraps\WorkerInitializable;
 use Psr\Log\{LoggerInterface, NullLogger};
+use Swoole\Coroutine;
 use Swoole\Coroutine\{Channel, MySQL};
 
 /**
@@ -57,13 +58,13 @@ class MySQLSwooleConnectionPool implements ConnectionPool, WorkerInitializable
     public function init()
     {
         $this->pool = new Channel($this->capacity);
-        $count = $this->capacity;
-        while ($count > 0) {
+        $i = $this->capacity;
+        while ($i > 0) {
             try {
                 $connection = ($this->connector)();
                 if ($connection !== false) {
                     $this->pool->push($connection);
-                    $count--;
+                    $i--;
                 }
             } catch (Exception $e) {
                 $this->logger->warning('Failed to establish connection', ['exception' => $e]);
@@ -78,10 +79,10 @@ class MySQLSwooleConnectionPool implements ConnectionPool, WorkerInitializable
     {
         while (true) {
             $connection = $this->pool->pop();
-            if ($connection !== false) {
+            if ($connection != false) {
                 return $connection;
             }
-            sleep(0.01);
+            Coroutine::sleep(0.001);
         }
     }
 
