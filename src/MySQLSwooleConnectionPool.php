@@ -6,7 +6,6 @@ use Exception;
 use Hamlet\Database\ConnectionPool;
 use Hamlet\Http\Swoole\Bootstraps\WorkerInitializable;
 use Psr\Log\{LoggerInterface, NullLogger};
-use Swoole\Coroutine;
 use Swoole\Coroutine\{Channel, MySQL};
 
 /**
@@ -77,13 +76,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool, WorkerInitializable
      */
     public function pop()
     {
-        while (true) {
-            $connection = $this->pool->pop();
-            if ($connection != false) {
-                return $connection;
-            }
-            Coroutine::sleep(0.001);
-        }
+        return $this->pool->pop();
     }
 
     /**
