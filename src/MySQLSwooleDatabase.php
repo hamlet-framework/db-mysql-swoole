@@ -6,7 +6,7 @@ use Hamlet\Database\{Database, DatabaseException, Session};
 use Exception;
 use Hamlet\Http\Swoole\Bootstraps\WorkerInitializable;
 use Swoole\Coroutine;
-use Swoole\Coroutine\MySQL;
+use Swoole\Coroutine\{Channel, MySQL};
 use function gethostbyname;
 
 /**
@@ -60,6 +60,37 @@ class MySQLSwooleDatabase extends Database implements WorkerInitializable
         } catch (Exception $e) {
             throw new DatabaseException('Failed to execute statement', 0, $e);
         }
+    }
+
+    /**
+     * @template K
+     * @template Q
+     * @param callable[] $callables
+     * @psalm-param array<K,callable(Session):Q> $callables
+     * @return array
+     * @psalm-return array<K,Q>
+     */
+    public function withSessions(array $callables)
+    {
+        $channel = new Channel(count($callables));
+        $result = [];
+        foreach ($callables as $key => $callable) {
+            go(function () use ($channel, $callable, $key) {
+                $channel->push(
+                    $this->withSession(
+                        function (Session $session) use ($callable, $key) {
+                            return [$key, $callable($session)];
+                        }
+                    )
+                );
+            });
+            $result[$key] = -1;
+        }
+        foreach ($callables as $key => $_) {
+            list($key, $item) = $channel->pop();
+            $result[$key] = $item;
+        }
+        return $result;
     }
 
     protected function createSession($handle): Session
