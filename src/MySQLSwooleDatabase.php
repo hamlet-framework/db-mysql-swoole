@@ -63,14 +63,14 @@ class MySQLSwooleDatabase extends Database implements WorkerInitializable
     }
 
     /**
-     * @template K
+     * @template K as array-key
      * @template Q
-     * @param callable[] $callables
-     * @psalm-param array<K,callable(Session):Q> $callables
-     * @return array
-     * @psalm-return array<K,Q>
+     * @param array<K,callable(Session):Q> $callables
+     * @return array<K,Q>
+     * @psalm-suppress InvalidReturnType
+     * @psalm-suppress InvalidReturnStatement
      */
-    public function withSessions(array $callables)
+    public function withSessions(array $callables): array
     {
         $channel = new Channel(count($callables));
         $result = [];

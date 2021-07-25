@@ -1,4 +1,4 @@
-<phpunit bootstrap="vendor/autoload.php">
+./v<phpunit bootstrap="vendor/autoload.php">
     <testsuites>
         <testsuite name="hamlet-framework/db-mysql">
             <directory>tests</directory>

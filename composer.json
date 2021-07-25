@@ -23,7 +23,7 @@
     "eaglewu/swoole-ide-helper": "dev-master",
     "monolog/monolog": "@stable",
     "phake/phake": "@stable",
-    "phpunit/phpunit": "^7",
+    "phpunit/phpunit": "^7 || ^8 || ^9",
     "squizlabs/php_codesniffer": "@stable",
     "vimeo/psalm": "@stable"
   },
