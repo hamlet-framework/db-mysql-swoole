@@ -2,13 +2,12 @@
 
 namespace Hamlet\Database\MySQLSwoole;
 
-use Hamlet\Database\{Database, DatabaseException, Session};
 use Exception;
+use Hamlet\Database\{Database, DatabaseException, Session};
 use Hamlet\Http\Swoole\Bootstraps\WorkerInitializable;
 use Swoole\Coroutine;
 use Swoole\Coroutine\{Channel, MySQL};
 use function gethostbyname;
-use function Hamlet\Cast\_class;
 
 /**
  * @extends Database<MySQL>

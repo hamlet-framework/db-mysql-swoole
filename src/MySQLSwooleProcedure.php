@@ -3,11 +3,11 @@
 namespace Hamlet\Database\MySQLSwoole;
 
 use Generator;
+use Hamlet\Database\DatabaseException;
 use Hamlet\Database\Procedure;
 use Hamlet\Database\Traits\QueryExpanderTrait;
 use Swoole\Coroutine\MySQL;
 use Swoole\Coroutine\MySQL\Statement;
-use function Hamlet\Cast\_class;
 use function Hamlet\Cast\_float;
 use function Hamlet\Cast\_int;
 use function Hamlet\Cast\_map;
@@ -64,6 +64,7 @@ class MySQLSwooleProcedure extends Procedure
     public function fetch(): Generator
     {
         list($_, $result) = $this->bindParametersAndExecute($this->handle);
+        assert(($type = _map(_int(), _map(_string(), _union(_int(), _string(), _null(), _float())))) && $type->matches($result), var_export($result, true));
         yield from $result;
     }
 
@@ -74,7 +75,7 @@ class MySQLSwooleProcedure extends Procedure
 
     /**
      * @param MySQL $handle
-     * @return array{Statement,array<int,array<string,int|string|float|null>>}
+     * @return array{Statement,mixed}
      * @psalm-suppress LessSpecificReturnStatement
      * @psalm-suppress MixedAssignment
      * @psalm-suppress MoreSpecificReturnType
@@ -85,11 +86,14 @@ class MySQLSwooleProcedure extends Procedure
         $this->parameters = [];
 
         $key = 'statement_' . md5($query);
-        if (property_exists($this->handle, $key)) {
-            $statement = $this->handle->{$key};
-        } else {
+        $statement = property_exists($this->handle, $key) ? $this->handle->{$key} : false;
+        if (!$statement) {
             $statement = $handle->prepare($query);
-            $this->handle->{$key} = $statement;
+            if ($statement) {
+                $this->handle->{$key} = $statement;
+            } else {
+                throw new DatabaseException(sprintf('Cannot prepare statement %s', $query));
+            }
         }
         assert($statement instanceof Statement);
 
@@ -97,9 +101,8 @@ class MySQLSwooleProcedure extends Procedure
         foreach ($parameters as list($_, $value)) {
             $values[] = $value;
         }
-        $records = $statement->execute($values);
-        assert(($type = _map(_int(), _map(_string(), _union(_int(), _string(), _null(), _float())))) && $type->matches($records));
-        return [$statement, $records];
+        $result = $statement->execute($values);
+        return [$statement, $result];
     }
 
     public function __destruct()

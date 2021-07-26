@@ -19,9 +19,13 @@ class MySQLSwooleDatabaseTest extends TestCase
     /** @var int */
     private $userId;
 
-    public function setUp()
+    /**
+     * @before
+     */
+    public function _setUp()
     {
-        $this->database = new MySQLSwooleDatabase('0.0.0.0', 'root', '', 'test');
+        $this->database = new MySQLSwooleDatabase('0.0.0.0', 'root', '', 'test', 4);
+        $this->database->init();
 
         $this->database->withSession(function (Session $session) {
             $procedure = $session->prepare("INSERT INTO users (name) VALUES ('Vladimir')");
@@ -46,7 +50,10 @@ class MySQLSwooleDatabaseTest extends TestCase
         });
     }
 
-    public function tearDown()
+    /**
+     * @after
+     */
+    public function _tearDown()
     {
         $this->database->withSession(function (Session $session) {
             $session->prepare('DELETE FROM addresses WHERE 1')->execute();
