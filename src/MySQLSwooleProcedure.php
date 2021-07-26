@@ -60,6 +60,7 @@ class MySQLSwooleProcedure extends Procedure
 
     /**
      * @return Generator<int,array<string,int|string|float|null>>
+     * @psalm-suppress MixedReturnTypeCoercion
      */
     public function fetch(): Generator
     {
@@ -76,9 +77,7 @@ class MySQLSwooleProcedure extends Procedure
     /**
      * @param MySQL $handle
      * @return array{Statement,mixed}
-     * @psalm-suppress LessSpecificReturnStatement
      * @psalm-suppress MixedAssignment
-     * @psalm-suppress MoreSpecificReturnType
      */
     private function bindParametersAndExecute(MySQL $handle): array
     {
