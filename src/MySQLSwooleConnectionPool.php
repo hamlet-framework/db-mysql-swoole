@@ -2,11 +2,13 @@
 
 namespace Hamlet\Database\MySQLSwoole;
 
+use DomainException;
 use Exception;
 use Hamlet\Database\ConnectionPool;
 use Hamlet\Http\Swoole\Bootstraps\WorkerInitializable;
 use Psr\Log\{LoggerInterface, NullLogger};
 use Swoole\Coroutine\{Channel, MySQL};
+use function Hamlet\Cast\_class;
 
 /**
  * @implements ConnectionPool<MySQL>
@@ -14,8 +16,7 @@ use Swoole\Coroutine\{Channel, MySQL};
 class MySQLSwooleConnectionPool implements ConnectionPool, WorkerInitializable
 {
     /**
-     * @var callable
-     * @psalm-var callable():MySQL|false
+     * @var callable():(MySQL|false)
      */
     private $connector;
 
@@ -27,7 +28,7 @@ class MySQLSwooleConnectionPool implements ConnectionPool, WorkerInitializable
     /**
      * @var Channel|null
      */
-    private $pool;
+    private $pool = null;
 
     /**
      * @var int
@@ -35,9 +36,8 @@ class MySQLSwooleConnectionPool implements ConnectionPool, WorkerInitializable
     private $capacity;
 
     /**
-     * @param callable $connector
+     * @param callable():(MySQL|false) $connector $connector
      * @param int $capacity
-     * @psalm-param callable():MySQL|false $connector
      */
     public function __construct(callable $connector, int $capacity)
     {
@@ -76,7 +76,10 @@ class MySQLSwooleConnectionPool implements ConnectionPool, WorkerInitializable
      */
     public function pop()
     {
-        return $this->pool->pop();
+        if ($this->pool === null) {
+            throw new DomainException('Pool not initialized');
+        }
+        return _class(MySQL::class)->assert($this->pool->pop());
     }
 
     /**
@@ -85,6 +88,9 @@ class MySQLSwooleConnectionPool implements ConnectionPool, WorkerInitializable
      */
     public function push($connection)
     {
+        if ($this->pool === null) {
+            throw new DomainException('Pool not initialized');
+        }
         $this->pool->push($connection);
     }
 }

@@ -16,11 +16,11 @@
     "php": "^7 || ^8",
     "ext-swoole": "@stable",
     "psr/log": "@stable",
-    "hamlet-framework/db": "dev-master",
-    "hamlet-framework/http-swoole": "dev-master"
+    "hamlet-framework/db": "@stable",
+    "hamlet-framework/http-swoole": "@stable"
   },
   "require-dev": {
-    "eaglewu/swoole-ide-helper": "dev-master",
+    "swoole/ide-helper": "@stable",
     "monolog/monolog": "@stable",
     "phake/phake": "@stable",
     "phpunit/phpunit": "^7 || ^8 || ^9",

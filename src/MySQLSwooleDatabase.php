@@ -8,9 +8,11 @@ use Hamlet\Http\Swoole\Bootstraps\WorkerInitializable;
 use Swoole\Coroutine;
 use Swoole\Coroutine\{Channel, MySQL};
 use function gethostbyname;
+use function Hamlet\Cast\_class;
 
 /**
- * @template-extends Database<MySQL>
+ * @extends Database<MySQL>
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class MySQLSwooleDatabase extends Database implements WorkerInitializable
 {
@@ -18,6 +20,7 @@ class MySQLSwooleDatabase extends Database implements WorkerInitializable
      * @var array<string,string>
      */
     private $hosts = [];
+
 
     public function __construct(string $host, string $user, string $password, string $databaseName = null, int $poolCapacity = 512)
     {
@@ -34,6 +37,9 @@ class MySQLSwooleDatabase extends Database implements WorkerInitializable
             if ($databaseName) {
                 $params['database'] = $databaseName;
             }
+            /**
+             * @psalm-suppress TooManyArguments
+             */
             $connection->connect($params);
             return $connection;
         };
@@ -43,6 +49,7 @@ class MySQLSwooleDatabase extends Database implements WorkerInitializable
 
     public function init()
     {
+        assert($this->pool instanceof MySQLSwooleConnectionPool);
         $this->pool->init();
     }
 
@@ -67,14 +74,20 @@ class MySQLSwooleDatabase extends Database implements WorkerInitializable
      * @template Q
      * @param array<K,callable(Session):Q> $callables
      * @return array<K,Q>
-     * @psalm-suppress InvalidReturnType
      * @psalm-suppress InvalidReturnStatement
+     * @psalm-suppress InvalidReturnType
+     * @psalm-suppress MixedArrayAccess
+     * @psalm-suppress MixedArrayOffset
+     * @psalm-suppress MixedAssignment
      */
     public function withSessions(array $callables): array
     {
         $channel = new Channel(count($callables));
         $result = [];
         foreach ($callables as $key => $callable) {
+            /**
+             * @psalm-suppress UnusedFunctionCall
+             */
             go(function () use ($channel, $callable, $key) {
                 $channel->push(
                     $this->withSession(
@@ -86,7 +99,7 @@ class MySQLSwooleDatabase extends Database implements WorkerInitializable
             });
             $result[$key] = -1;
         }
-        foreach ($callables as $key => $_) {
+        foreach ($callables as $_) {
             list($key, $item) = $channel->pop();
             $result[$key] = $item;
         }
